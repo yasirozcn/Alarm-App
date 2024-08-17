@@ -1,0 +1,3 @@
+.custom-calendar {
+    @apply bg-white; /* Tailwind sınıflarını burada uygulayın */
+  }
