@@ -1,3 +1,7 @@
 .custom-calendar {
     @apply bg-white; /* Tailwind sınıflarını burada uygulayın */
   }
+
+  .p-datepicker-group-container{
+    background-color: #f9f9f9;
+  }

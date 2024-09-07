@@ -10,7 +10,7 @@ function Navbar() {
       // Kullanıcı başarılı bir şekilde çıkış yaptıktan sonra yönlendirme veya işlem yapabilirsiniz
       window.location.href = '/login'; // Çıkış yapıldıktan sonra kullanıcıyı giriş sayfasına yönlendirir
     } catch (error) {
-      console.error('Çıkış yaparken hata oluştu:', error);
+      console.error('Çıkış yaparken hata oluştu deneme:', error);
     }
   };
 
