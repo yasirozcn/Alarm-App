@@ -1,11 +1,78 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable no-unused-vars */
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Calendar } from 'primereact/calendar';
 import '../styles/check.css';
+
+const trainLines = {
+  lines: [
+    {
+      name: 'Ankara - İstanbul YHT',
+      stops: [
+        'Ankara Gar',
+        'Polatlı',
+        'Eskişehir',
+        'Bozüyük',
+        'Bilecik',
+        'Arifiye',
+        'İzmit',
+        'Gebze',
+        'Pendik',
+        'Bostancı',
+        'Söğütlüçeşme',
+      ],
+    },
+    {
+      name: 'Ankara - Konya YHT',
+      stops: ['Ankara Gar', 'Eryaman', 'Polatlı', 'Konya Gar'],
+    },
+    {
+      name: 'İstanbul - Konya YHT',
+      stops: [
+        'İstanbul(Söğütlüçeşme)',
+        'İstanbul(Bostancı)',
+        'İstanbul(Pendik)',
+        'Gebze',
+        'İzmit',
+        'Arifiye',
+        'Bozüyük',
+        'Eskişehir',
+        'Polatlı',
+        'Konya Gar',
+      ],
+    },
+    {
+      name: 'Ankara - Eskişehir YHT',
+      stops: ['Ankara Gar', 'Eryaman', 'Polatlı', 'Eskişehir'],
+    },
+    {
+      name: 'İstanbul - Eskişehir YHT',
+      stops: [
+        'İstanbul(Söğütlüçeşme)',
+        'İstanbul(Bostancı)',
+        'İstanbul(Pendik)',
+        'Gebze',
+        'İzmit',
+        'Arifiye',
+        'Bozüyük',
+        'Eskişehir',
+      ],
+    },
+    {
+      name: 'Ankara - Sivas YHT',
+      stops: [
+        'Ankara Gar',
+        'Elmadağ',
+        'Kırıkkale',
+        'Yerköy',
+        'Yozgat',
+        'Sivas',
+      ],
+    },
+  ],
+};
 
 function Check({ setResults, setLoading }) {
   const [formData, setFormData] = useState({
@@ -13,6 +80,7 @@ function Check({ setResults, setLoading }) {
     nereye: '',
   });
   const [date, setDate] = useState(null);
+  const [availableDestinations, setAvailableDestinations] = useState([]); // 'Nereye' dropdown'u için uygun duraklar
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,6 +88,25 @@ function Check({ setResults, setLoading }) {
       ...prevState,
       [name]: value,
     }));
+
+    // "Nereden" seçildiğinde, ona uygun "Nereye" duraklarını güncelle
+    if (name === 'nereden') {
+      updateAvailableDestinations(value);
+    }
+  };
+
+  const updateAvailableDestinations = (nereden) => {
+    let destinations = [];
+    trainLines.lines.forEach((line) => {
+      if (line.stops.includes(nereden)) {
+        destinations = [...new Set([...destinations, ...line.stops])]; // Her hattaki durakları ekle
+      }
+    });
+    // "Nereden" durağını "Nereye" seçeneklerinden çıkar
+    const filteredDestinations = destinations.filter(
+      (stop) => stop !== nereden
+    );
+    setAvailableDestinations(filteredDestinations);
   };
 
   const handleDateChange = (e) => {
@@ -29,10 +116,10 @@ function Check({ setResults, setLoading }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Format the date as "dd.mm.yy"
+    // Tarihi "dd.mm.yy" formatında biçimlendir
     const formattedDate = date ? date.toLocaleDateString('tr-TR') : '';
 
-    // Combine formData with the formatted date
+    // Form verilerini tarih ile birleştir
     const finalFormData = {
       ...formData,
       dateInput: formattedDate,
@@ -49,30 +136,45 @@ function Check({ setResults, setLoading }) {
       setLoading(false);
     } catch (error) {
       console.error('Hata:', error);
+      setLoading(false);
     }
   };
+
   return (
     <div>
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="nereden">Nereden:</label>
-          <input
-            type="text"
+          <select
             id="nereden"
             name="nereden"
             value={formData.nereden}
             onChange={handleChange}
-          />
+          >
+            {trainLines.lines.map((line) =>
+              line.stops.map((stop) => (
+                <option key={stop} value={stop}>
+                  {stop}
+                </option>
+              ))
+            )}
+          </select>
         </div>
         <div>
           <label htmlFor="nereye">Nereye:</label>
-          <input
-            type="text"
+          <select
             id="nereye"
             name="nereye"
             value={formData.nereye}
             onChange={handleChange}
-          />
+            disabled={!formData.nereden} // "Nereden" seçilmeden "Nereye" seçilemez
+          >
+            {availableDestinations.map((stop) => (
+              <option key={stop} value={stop}>
+                {stop}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label htmlFor="dateInput">Tarih:</label>
